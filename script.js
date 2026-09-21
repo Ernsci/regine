@@ -1,6 +1,8 @@
 const CONFIG = {
 
-  birthday: "2008-09-21",
+  birthday: "2008-09-25",
+
+  celebratingAge: 18,
 
   heroKicker: "The 18th of it all",
   heroMessage: "Making memories with you is the best gift.",
@@ -595,19 +597,33 @@ function hideSection(element, label) {
   section.hidden = true;
 }
 
-function applyContent(age) {
-  if (typeof age === "number" && age > 0) {
+function celebrationAge(currentAge) {
+  if (Number.isInteger(CONFIG.celebratingAge) && CONFIG.celebratingAge > 0) {
+    return CONFIG.celebratingAge;
+  }
+
+  if (typeof currentAge === "number" && currentAge > 0) {
+    console.warn(
+      "[birthday] CONFIG.celebratingAge is missing or not a positive whole number — using the age derived from CONFIG.birthday."
+    );
+    return currentAge;
+  }
+
+  console.warn(
+    "[birthday] Neither CONFIG.celebratingAge nor CONFIG.birthday produced a usable age — falling back to 18."
+  );
+  return 18;
+}
+
+function applyContent(celebratingAge) {
+  if (typeof celebratingAge === "number" && celebratingAge > 0) {
     document.querySelectorAll("[data-age]").forEach((node) => {
-      node.textContent = String(age);
+      node.textContent = String(celebratingAge);
     });
     document.querySelectorAll("[data-age-ordinal]").forEach((node) => {
-      node.textContent = ordinal(age);
+      node.textContent = ordinal(celebratingAge);
     });
-    document.title = `Happy ${ordinal(age)} Birthday 🎂`;
-  } else {
-    console.warn(
-      "[birthday] No age could be derived from CONFIG.birthday — keeping the fallback numbers."
-    );
+    document.title = `Happy ${ordinal(celebratingAge)} Birthday 🎂`;
   }
 
   els.heroKicker.textContent = CONFIG.heroKicker;
@@ -672,10 +688,11 @@ function init() {
   const birth = parseBirthday(CONFIG.birthday);
   const now = new Date();
   const age = birth ? ageOn(birth, now) : null;
+  const celebrating = celebrationAge(age);
 
-  applyContent(age);
+  applyContent(celebrating);
   renderGallery();
-  renderCandles(typeof age === "number" && age > 0 ? age : 18);
+  renderCandles(celebrating);
 
   if (birth) {
     renderStats(buildStats(birth, now));
