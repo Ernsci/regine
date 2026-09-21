@@ -1,0 +1,801 @@
+const CONFIG = {
+ 
+  birthday: "2008-09-21",
+
+  heroKicker: "The 18th of it all",
+  heroMessage: "Making memories with you is the best gift.",
+
+  celebrateLines: [
+    "Eighteen years of you. Ridiculous, in the best way.",
+    "Officially an adult. Nobody tell the authorities.",
+    "Nineteen is going to have to work hard to beat this.",
+    "Same time next year, but louder.",
+  ],
+
+  numbersLead:
+    "Nobody is counting. Except this page. This page is definitely counting.",
+
+  photos: [{ src: "ourpic.jpg", caption: "Us — my favourite place to be" }],
+
+  letter: [
+    "Happy 18th birthday.",
+    "Eighteen. A whole adult, legally speaking, which honestly reads like a clerical error.",
+    "Here is what I actually want you to know: you are the best part of my ordinary days. Not the loud, memorable ones — the boring Tuesday ones, where nothing happens and everything is fine because you are in them.",
+    "I made you a page instead of buying a card, mostly because a card cannot throw confetti at you. Keep scrolling. There is cake.",
+    "New country, new decade, new you. I cannot wait to watch all of it.",
+  ].join("\n\n"),
+
+  signoff: "— happy 18th, my love 💖",
+
+  wish: "Wish made. Now go be 18. 🎉",
+
+  typedSpeed: 16,
+};
+
+/* --------------------------------------------------------------------------
+   Helpers
+   -------------------------------------------------------------------------- */
+const MS_PER_DAY = 86400000;
+const HEARTBEATS_PER_MINUTE = 72;
+const MAX_CONFETTI_NODES = 260;
+
+const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+function prefersReducedMotion() {
+  return motionQuery.matches;
+}
+
+function required(id) {
+  const element = document.getElementById(id);
+  if (!element) {
+    throw new Error(`[birthday] Required element #${id} is missing from index.html`);
+  }
+  return element;
+}
+
+function pick(list) {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
+function randomBetween(min, max) {
+  return Math.random() * (max - min) + min;
+}
+
+function formatNumber(value) {
+  return Math.round(value).toLocaleString();
+}
+
+function ordinal(value) {
+  const withinHundred = value % 100;
+  if (withinHundred >= 11 && withinHundred <= 13) return `${value}th`;
+
+  switch (value % 10) {
+    case 1:
+      return `${value}st`;
+    case 2:
+      return `${value}nd`;
+    case 3:
+      return `${value}rd`;
+    default:
+      return `${value}th`;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Element lookups
+   -------------------------------------------------------------------------- */
+const els = {};
+
+function collectElements() {
+  els.main = required("main");
+  els.gate = required("gate");
+  els.openBtn = required("openBtn");
+  els.confettiLayer = required("confettiLayer");
+  els.progressBar = required("progressBar");
+
+  els.heroPhoto = required("heroPhoto");
+  els.photoFrame = required("photoFrame");
+  els.heroKicker = required("heroKicker");
+  els.heroSub = required("heroSub");
+  els.celebrateBtn = required("celebrateBtn");
+  els.numbersLead = required("numbersLead");
+  els.stats = required("stats");
+  els.galleryGrid = required("galleryGrid");
+
+  els.letterText = required("letterText");
+  els.letterFull = required("letterFull");
+  els.letterSignoff = required("letterSignoff");
+  els.letterReplay = required("letterReplay");
+
+  els.cakeCandles = required("cakeCandles");
+  els.blowBtn = required("blowBtn");
+  els.wishMessage = required("wishMessage");
+
+  els.lightbox = document.getElementById("lightbox");
+  els.lightboxImg = document.getElementById("lightboxImg");
+  els.lightboxCaption = document.getElementById("lightboxCaption");
+  els.lightboxClose = document.getElementById("lightboxClose");
+  els.lightboxPrev = document.getElementById("lightboxPrev");
+  els.lightboxNext = document.getElementById("lightboxNext");
+}
+
+/* --------------------------------------------------------------------------
+   Dates and counters
+   -------------------------------------------------------------------------- */
+function parseBirthday(value) {
+  const parsed = new Date(`${value}T00:00:00`);
+  if (Number.isNaN(parsed.getTime())) {
+    console.error(
+      `[birthday] CONFIG.birthday is not a valid date: "${value}". Counters will be skipped.`
+    );
+    return null;
+  }
+  return parsed;
+}
+
+function startOfDay(date) {
+  const copy = new Date(date);
+  copy.setHours(0, 0, 0, 0);
+  return copy;
+}
+
+function ageOn(birth, now) {
+  let age = now.getFullYear() - birth.getFullYear();
+  const hadBirthday =
+    now.getMonth() > birth.getMonth() ||
+    (now.getMonth() === birth.getMonth() && now.getDate() >= birth.getDate());
+  if (!hadBirthday) age -= 1;
+  return Math.max(age, 0);
+}
+
+function isBirthdayToday(birth, now) {
+  return now.getMonth() === birth.getMonth() && now.getDate() === birth.getDate();
+}
+
+function daysUntilNextBirthday(birth, now) {
+  const today = startOfDay(now);
+  const next = startOfDay(
+    new Date(now.getFullYear(), birth.getMonth(), birth.getDate())
+  );
+  if (next.getTime() < today.getTime()) next.setFullYear(next.getFullYear() + 1);
+  return Math.round((next.getTime() - today.getTime()) / MS_PER_DAY);
+}
+
+function buildStats(birth, now) {
+  const daysAlive = Math.max(
+    0,
+    Math.floor((now.getTime() - birth.getTime()) / MS_PER_DAY)
+  );
+
+  const stats = [
+    { value: ageOn(birth, now), label: "years young" },
+    { value: daysAlive, label: "days of you" },
+    { value: daysAlive * 24, label: "hours of you" },
+    {
+      value: daysAlive * 24 * 60 * HEARTBEATS_PER_MINUTE,
+      label: "heartbeats, roughly",
+    },
+  ];
+
+  if (isBirthdayToday(birth, now)) {
+    stats.push({ text: "Today 🎂", label: "and it is your day", highlight: true });
+  } else {
+    stats.push({
+      value: daysUntilNextBirthday(birth, now),
+      label: "days until the next one",
+    });
+  }
+
+  return stats;
+}
+
+function animateNumber(output, target) {
+  if (prefersReducedMotion()) {
+    output.textContent = formatNumber(target);
+    return;
+  }
+
+  const duration = 1200;
+  const startedAt = performance.now();
+
+  const tick = (now) => {
+    const progress = Math.min((now - startedAt) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    output.textContent = formatNumber(target * eased);
+    if (progress < 1) requestAnimationFrame(tick);
+  };
+
+  requestAnimationFrame(tick);
+}
+
+function countUpWhenVisible(card, output, target) {
+  if (!("IntersectionObserver" in window)) {
+    output.textContent = formatNumber(target);
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        animateNumber(output, target);
+      });
+    },
+    { threshold: 0.4 }
+  );
+
+  observer.observe(card);
+}
+
+function renderStats(stats) {
+  els.stats.textContent = "";
+
+  stats.forEach((stat, index) => {
+    const card = document.createElement("div");
+    card.className = stat.highlight ? "stat stat--today reveal" : "stat reveal";
+    card.style.setProperty("--i", String(Math.min(index, 5)));
+
+    const value = document.createElement("span");
+    value.className = "stat__value";
+    value.textContent = typeof stat.text === "string" ? stat.text : "0";
+
+    const label = document.createElement("span");
+    label.className = "stat__label";
+    label.textContent = stat.label;
+
+    card.append(value, label);
+    els.stats.appendChild(card);
+
+    if (typeof stat.value === "number") {
+      countUpWhenVisible(card, value, stat.value);
+    }
+  });
+}
+
+/* --------------------------------------------------------------------------
+   Gallery + photo viewer
+   -------------------------------------------------------------------------- */
+let lightboxIndex = 0;
+
+function galleryPhotos() {
+  return Array.isArray(CONFIG.photos) ? CONFIG.photos : [];
+}
+
+function renderGallery() {
+  const photos = galleryPhotos();
+  els.galleryGrid.textContent = "";
+
+  if (!photos.length) {
+    console.warn("[birthday] CONFIG.photos is empty — the gallery is hidden.");
+    const section = els.galleryGrid.closest(".section");
+    if (section) section.hidden = true;
+    return;
+  }
+
+  els.galleryGrid.classList.toggle("gallery__grid--single", photos.length === 1);
+
+  photos.forEach((photo, index) => {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "gallery__item reveal";
+    item.style.setProperty("--i", String(Math.min(index, 5)));
+    item.setAttribute("aria-label", `Open photo ${index + 1} of ${photos.length}`);
+
+    const image = document.createElement("img");
+    image.src = photo.src;
+    image.alt = photo.caption || `Photo ${index + 1}`;
+    image.loading = index === 0 ? "eager" : "lazy";
+    image.addEventListener("error", () => {
+      item.classList.add("is-missing");
+      console.error(
+        `[birthday] Could not load "${photo.src}" — falling back to a placeholder card.`
+      );
+    });
+
+    const caption = document.createElement("span");
+    caption.className = "gallery__caption";
+    caption.textContent = photo.caption || "";
+
+    item.append(image, caption);
+    item.addEventListener("click", () => openLightbox(index));
+    els.galleryGrid.appendChild(item);
+  });
+}
+
+function syncLightbox() {
+  const photos = galleryPhotos();
+  const photo = photos[lightboxIndex];
+  if (!photo) return;
+
+  els.lightboxImg.src = photo.src;
+  els.lightboxImg.alt = photo.caption || `Photo ${lightboxIndex + 1}`;
+  els.lightboxCaption.textContent = photo.caption || "";
+
+  const multiple = photos.length > 1;
+  els.lightboxPrev.hidden = !multiple;
+  els.lightboxNext.hidden = !multiple;
+}
+
+function openLightbox(index) {
+  if (!els.lightbox || typeof els.lightbox.showModal !== "function") {
+    console.warn("[birthday] <dialog> is unavailable — the photo viewer is skipped.");
+    return;
+  }
+  if (els.lightbox.open) return;
+
+  lightboxIndex = index;
+  syncLightbox();
+  els.lightbox.showModal();
+}
+
+function stepLightbox(direction) {
+  const photos = galleryPhotos();
+  if (photos.length < 2) return;
+  lightboxIndex = (lightboxIndex + direction + photos.length) % photos.length;
+  syncLightbox();
+}
+
+function setupLightbox() {
+  const hasControls =
+    els.lightbox && els.lightboxClose && els.lightboxPrev && els.lightboxNext;
+  if (!hasControls) return;
+
+  els.lightboxClose.addEventListener("click", () => els.lightbox.close());
+  els.lightboxPrev.addEventListener("click", () => stepLightbox(-1));
+  els.lightboxNext.addEventListener("click", () => stepLightbox(1));
+
+  els.lightbox.addEventListener("click", (event) => {
+    if (event.target === els.lightbox) els.lightbox.close();
+  });
+
+  els.lightbox.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowLeft") stepLightbox(-1);
+    if (event.key === "ArrowRight") stepLightbox(1);
+  });
+}
+
+/* --------------------------------------------------------------------------
+   Letter
+   -------------------------------------------------------------------------- */
+let typeTimer = 0;
+
+function stopTyping() {
+  if (typeTimer) {
+    clearTimeout(typeTimer);
+    typeTimer = 0;
+  }
+}
+
+function typeLetter() {
+  stopTyping();
+
+  // Screen readers get the finished letter, never a stream of characters.
+  els.letterFull.textContent = CONFIG.letter;
+  els.letterSignoff.classList.remove("is-visible");
+  els.letterText.classList.remove("is-typing");
+
+  if (prefersReducedMotion()) {
+    els.letterText.textContent = CONFIG.letter;
+    els.letterSignoff.classList.add("is-visible");
+    return;
+  }
+
+  const characters = [...CONFIG.letter];
+  els.letterText.textContent = "";
+  els.letterText.classList.add("is-typing");
+
+  let index = 0;
+  const step = () => {
+    index += 1;
+    els.letterText.textContent = characters.slice(0, index).join("");
+
+    if (index >= characters.length) {
+      typeTimer = 0;
+      els.letterText.classList.remove("is-typing");
+      els.letterSignoff.classList.add("is-visible");
+      return;
+    }
+
+    typeTimer = window.setTimeout(step, CONFIG.typedSpeed);
+  };
+
+  step();
+}
+
+/* --------------------------------------------------------------------------
+   Confetti + sparkles
+   -------------------------------------------------------------------------- */
+const CONFETTI_COLORS = [
+  "#ff69b4",
+  "#ff6b6b",
+  "#4ecdc4",
+  "#ffe66d",
+  "#ffe8f1",
+  "#ff8c42",
+  "#c084fc",
+];
+
+const CONFETTI_SHAPES = [
+  "confetti--circle",
+  "confetti--square",
+  "confetti--ribbon",
+];
+
+function removeWhenDone(node) {
+  node.addEventListener("animationend", () => node.remove(), { once: true });
+}
+
+function spawnConfetti(count = 90) {
+  if (prefersReducedMotion()) return;
+
+  if (els.confettiLayer.childElementCount > MAX_CONFETTI_NODES) {
+    console.warn("[birthday] Confetti layer is saturated — skipping this burst.");
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+
+  for (let i = 0; i < count; i += 1) {
+    const piece = document.createElement("span");
+    piece.className = `confetti ${pick(CONFETTI_SHAPES)}`;
+    piece.style.setProperty("--x", `${randomBetween(-3, 100).toFixed(2)}%`);
+    piece.style.setProperty("--size", `${randomBetween(6, 15).toFixed(1)}px`);
+    piece.style.setProperty("--color", pick(CONFETTI_COLORS));
+    piece.style.setProperty("--delay", `${randomBetween(0, 0.6).toFixed(2)}s`);
+    piece.style.setProperty("--dur", `${randomBetween(2.2, 4.4).toFixed(2)}s`);
+    piece.style.setProperty("--drift", `${randomBetween(-14, 14).toFixed(1)}vw`);
+    piece.style.setProperty("--spin", `${Math.round(randomBetween(360, 1080))}deg`);
+    removeWhenDone(piece);
+    fragment.appendChild(piece);
+  }
+
+  els.confettiLayer.appendChild(fragment);
+}
+
+function spawnSparkles(x, y) {
+  if (prefersReducedMotion()) return;
+
+  const total = 8;
+
+  for (let i = 0; i < total; i += 1) {
+    const sparkle = document.createElement("span");
+    const angle = (Math.PI * 2 * i) / total + Math.random() * 0.5;
+    const distance = randomBetween(22, 58);
+
+    sparkle.className = "sparkle";
+    sparkle.style.left = `${x}px`;
+    sparkle.style.top = `${y}px`;
+    sparkle.style.setProperty("--dx", `${Math.cos(angle) * distance}px`);
+    sparkle.style.setProperty("--dy", `${Math.sin(angle) * distance}px`);
+    removeWhenDone(sparkle);
+    document.body.appendChild(sparkle);
+  }
+}
+
+function sparkleFromElement(element) {
+  const rect = element.getBoundingClientRect();
+  spawnSparkles(rect.left + rect.width / 2, rect.top + rect.height / 2);
+}
+
+/* --------------------------------------------------------------------------
+   Cake
+   -------------------------------------------------------------------------- */
+let candlesBlown = false;
+let blowBusy = false;
+let blowTimers = [];
+
+function renderCandles(age) {
+  const total = Math.min(Math.max(age, 1), 24);
+  els.cakeCandles.textContent = "";
+
+  for (let i = 0; i < total; i += 1) {
+    const candle = document.createElement("span");
+    candle.className = "candle";
+
+    const flame = document.createElement("span");
+    flame.className = "candle__flame";
+
+    candle.appendChild(flame);
+    els.cakeCandles.appendChild(candle);
+  }
+}
+
+function clearBlowTimers() {
+  blowTimers.forEach((timer) => clearTimeout(timer));
+  blowTimers = [];
+}
+
+function setWish(text) {
+  els.wishMessage.textContent = text;
+}
+
+function blowOutCandles() {
+  clearBlowTimers();
+  candlesBlown = true;
+  blowBusy = true;
+
+  const candles = Array.from(els.cakeCandles.children);
+  const stagger = prefersReducedMotion() ? 0 : 60;
+
+  candles.forEach((candle, index) => {
+    blowTimers.push(
+      window.setTimeout(() => candle.classList.add("is-out"), index * stagger)
+    );
+  });
+
+  blowTimers.push(
+    window.setTimeout(() => {
+      blowBusy = false;
+      spawnConfetti(130);
+      setWish(CONFIG.wish);
+      els.blowBtn.textContent = "Light them again 🔥";
+    }, candles.length * stagger + 260)
+  );
+}
+
+function lightCandles() {
+  clearBlowTimers();
+  candlesBlown = false;
+  blowBusy = false;
+
+  Array.from(els.cakeCandles.children).forEach((candle) =>
+    candle.classList.remove("is-out")
+  );
+
+  setWish("");
+  els.blowBtn.textContent = "Blow out the candles 🎂";
+}
+
+function toggleCandles() {
+  if (blowBusy) return;
+  if (candlesBlown) {
+    lightCandles();
+    return;
+  }
+  blowOutCandles();
+}
+
+/* --------------------------------------------------------------------------
+   Gate + celebration
+   -------------------------------------------------------------------------- */
+function setMainInert(isInert) {
+  const main = els.main;
+  if ("inert" in main) main.inert = isInert;
+
+  if (isInert) {
+    main.setAttribute("aria-hidden", "true");
+  } else {
+    main.removeAttribute("aria-hidden");
+  }
+}
+
+let celebrateTimer = 0;
+
+function cycleHeroMessage() {
+  const lines =
+    Array.isArray(CONFIG.celebrateLines) && CONFIG.celebrateLines.length
+      ? CONFIG.celebrateLines
+      : [CONFIG.heroMessage];
+
+  clearTimeout(celebrateTimer);
+  els.heroSub.classList.add("is-celebrating");
+  els.heroSub.textContent = pick(lines);
+
+  celebrateTimer = window.setTimeout(() => {
+    els.heroSub.classList.remove("is-celebrating");
+    els.heroSub.textContent = CONFIG.heroMessage;
+  }, 3800);
+}
+
+function celebrate() {
+  spawnConfetti(window.innerWidth < 600 ? 70 : 120);
+  cycleHeroMessage();
+}
+
+function openGate() {
+  if (els.gate.classList.contains("is-closing")) return;
+
+  sparkleFromElement(els.openBtn);
+  els.gate.classList.add("is-closing");
+  setMainInert(false);
+  window.scrollTo({ top: 0, behavior: "auto" });
+
+  window.setTimeout(
+    () => {
+      els.gate.hidden = true;
+    },
+    prefersReducedMotion() ? 0 : 900
+  );
+
+  celebrate();
+}
+
+/* --------------------------------------------------------------------------
+   Content
+   -------------------------------------------------------------------------- */
+function hideSection(element, label) {
+  const section = element.closest(".section");
+  if (!section) {
+    console.warn(`[birthday] Could not find the ${label} section to hide.`);
+    return;
+  }
+  section.hidden = true;
+}
+
+function applyContent(age) {
+  if (typeof age === "number" && age > 0) {
+    document.querySelectorAll("[data-age]").forEach((node) => {
+      node.textContent = String(age);
+    });
+    document.querySelectorAll("[data-age-ordinal]").forEach((node) => {
+      node.textContent = ordinal(age);
+    });
+    document.title = `Happy ${ordinal(age)} Birthday 🎂`;
+  } else {
+    console.warn(
+      "[birthday] No age could be derived from CONFIG.birthday — keeping the fallback numbers."
+    );
+  }
+
+  els.heroKicker.textContent = CONFIG.heroKicker;
+  els.heroSub.textContent = CONFIG.heroMessage;
+  els.numbersLead.textContent = CONFIG.numbersLead;
+  els.letterFull.textContent = CONFIG.letter;
+  els.letterSignoff.textContent = CONFIG.signoff;
+}
+
+/* --------------------------------------------------------------------------
+   Scroll: reveal-on-enter + progress bar
+   -------------------------------------------------------------------------- */
+function setupRevealObserver() {
+  const targets = Array.from(document.querySelectorAll(".reveal"));
+
+  if (!("IntersectionObserver" in window)) {
+    console.warn(
+      "[birthday] IntersectionObserver is unavailable — showing everything at once."
+    );
+    targets.forEach((target) => target.classList.add("is-visible"));
+    return;
+  }
+
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+
+        entry.target.classList.add("is-visible");
+        observer.unobserve(entry.target);
+
+        if (entry.target.contains(els.letterText)) typeLetter();
+      });
+    },
+    { threshold: 0.15, rootMargin: "0px 0px -10% 0px" }
+  );
+
+  targets.forEach((target) => observer.observe(target));
+}
+
+function setupProgressBar() {
+  let queued = false;
+
+  const update = () => {
+    queued = false;
+    const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+    const ratio = scrollable > 0 ? Math.min(window.scrollY / scrollable, 1) : 0;
+    els.progressBar.style.width = `${(ratio * 100).toFixed(2)}%`;
+  };
+
+  const queue = () => {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(update);
+  };
+
+  window.addEventListener("scroll", queue, { passive: true });
+  window.addEventListener("resize", queue, { passive: true });
+  update();
+}
+
+/* --------------------------------------------------------------------------
+   Boot
+   -------------------------------------------------------------------------- */
+function init() {
+  collectElements();
+
+  const birth = parseBirthday(CONFIG.birthday);
+  const now = new Date();
+  const age = birth ? ageOn(birth, now) : null;
+
+  applyContent(age);
+  renderGallery();
+  renderCandles(typeof age === "number" && age > 0 ? age : 18);
+
+  if (birth) {
+    renderStats(buildStats(birth, now));
+  } else {
+    hideSection(els.stats, "numbers");
+  }
+
+  els.openBtn.addEventListener("click", openGate);
+  els.celebrateBtn.addEventListener("click", () => {
+    sparkleFromElement(els.celebrateBtn);
+    celebrate();
+  });
+  els.blowBtn.addEventListener("click", toggleCandles);
+  els.letterReplay.addEventListener("click", typeLetter);
+
+  els.heroPhoto.addEventListener("error", () => {
+    els.photoFrame.classList.add("is-missing");
+    console.error(
+      '[birthday] Could not load "ourpic.jpg" — showing a placeholder instead.'
+    );
+  });
+
+  setupLightbox();
+  setupProgressBar();
+  setupRevealObserver();
+
+  // The gate is a modal prompt, so lock the page behind it and put keyboard
+  // focus on the one thing there is to do.
+  setMainInert(true);
+  els.openBtn.focus({ preventScroll: true });
+
+  try {
+    history.scrollRestoration = "manual";
+  } catch (error) {
+    console.warn("[birthday] Could not take over scroll restoration.", error);
+  }
+}
+
+// If setup throws, the page must never end up blank: hide the gate, unlock the
+// content and reveal everything.
+function failOpen() {
+  const gate = document.getElementById("gate");
+  if (gate) gate.hidden = true;
+
+  const main = document.getElementById("main");
+  if (main) {
+    main.removeAttribute("aria-hidden");
+    if ("inert" in main) main.inert = false;
+  }
+
+  const heroSub = document.getElementById("heroSub");
+  if (heroSub && !heroSub.textContent) heroSub.textContent = CONFIG.heroMessage;
+
+  const numbersLead = document.getElementById("numbersLead");
+  if (numbersLead && !numbersLead.textContent) {
+    numbersLead.textContent = CONFIG.numbersLead;
+  }
+
+  const letterText = document.getElementById("letterText");
+  if (letterText && !letterText.textContent) letterText.textContent = CONFIG.letter;
+
+  const stats = document.getElementById("stats");
+  if (stats && !stats.childElementCount) {
+    const section = stats.closest(".section");
+    if (section) section.hidden = true;
+  }
+
+  document
+    .querySelectorAll(".reveal")
+    .forEach((element) => element.classList.add("is-visible"));
+}
+
+function start() {
+  try {
+    init();
+  } catch (error) {
+    console.error(
+      "[birthday] Setup failed, showing the page without the intro:",
+      error
+    );
+    failOpen();
+  }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", start, { once: true });
+} else {
+  start();
+}
