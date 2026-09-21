@@ -1,5 +1,5 @@
 const CONFIG = {
- 
+
   birthday: "2008-09-21",
 
   heroKicker: "The 18th of it all",
@@ -32,9 +32,6 @@ const CONFIG = {
   typedSpeed: 16,
 };
 
-/* --------------------------------------------------------------------------
-   Helpers
-   -------------------------------------------------------------------------- */
 const MS_PER_DAY = 86400000;
 const HEARTBEATS_PER_MINUTE = 72;
 const MAX_CONFETTI_NODES = 260;
@@ -81,9 +78,6 @@ function ordinal(value) {
   }
 }
 
-/* --------------------------------------------------------------------------
-   Element lookups
-   -------------------------------------------------------------------------- */
 const els = {};
 
 function collectElements() {
@@ -119,9 +113,6 @@ function collectElements() {
   els.lightboxNext = document.getElementById("lightboxNext");
 }
 
-/* --------------------------------------------------------------------------
-   Dates and counters
-   -------------------------------------------------------------------------- */
 function parseBirthday(value) {
   const parsed = new Date(`${value}T00:00:00`);
   if (Number.isNaN(parsed.getTime())) {
@@ -253,9 +244,6 @@ function renderStats(stats) {
   });
 }
 
-/* --------------------------------------------------------------------------
-   Gallery + photo viewer
-   -------------------------------------------------------------------------- */
 let lightboxIndex = 0;
 
 function galleryPhotos() {
@@ -355,9 +343,6 @@ function setupLightbox() {
   });
 }
 
-/* --------------------------------------------------------------------------
-   Letter
-   -------------------------------------------------------------------------- */
 let typeTimer = 0;
 
 function stopTyping() {
@@ -370,7 +355,6 @@ function stopTyping() {
 function typeLetter() {
   stopTyping();
 
-  // Screen readers get the finished letter, never a stream of characters.
   els.letterFull.textContent = CONFIG.letter;
   els.letterSignoff.classList.remove("is-visible");
   els.letterText.classList.remove("is-typing");
@@ -403,9 +387,6 @@ function typeLetter() {
   step();
 }
 
-/* --------------------------------------------------------------------------
-   Confetti + sparkles
-   -------------------------------------------------------------------------- */
 const CONFETTI_COLORS = [
   "#ff69b4",
   "#ff6b6b",
@@ -478,9 +459,6 @@ function sparkleFromElement(element) {
   spawnSparkles(rect.left + rect.width / 2, rect.top + rect.height / 2);
 }
 
-/* --------------------------------------------------------------------------
-   Cake
-   -------------------------------------------------------------------------- */
 let candlesBlown = false;
 let blowBusy = false;
 let blowTimers = [];
@@ -556,9 +534,6 @@ function toggleCandles() {
   blowOutCandles();
 }
 
-/* --------------------------------------------------------------------------
-   Gate + celebration
-   -------------------------------------------------------------------------- */
 function setMainInert(isInert) {
   const main = els.main;
   if ("inert" in main) main.inert = isInert;
@@ -611,9 +586,6 @@ function openGate() {
   celebrate();
 }
 
-/* --------------------------------------------------------------------------
-   Content
-   -------------------------------------------------------------------------- */
 function hideSection(element, label) {
   const section = element.closest(".section");
   if (!section) {
@@ -645,9 +617,6 @@ function applyContent(age) {
   els.letterSignoff.textContent = CONFIG.signoff;
 }
 
-/* --------------------------------------------------------------------------
-   Scroll: reveal-on-enter + progress bar
-   -------------------------------------------------------------------------- */
 function setupRevealObserver() {
   const targets = Array.from(document.querySelectorAll(".reveal"));
 
@@ -697,9 +666,6 @@ function setupProgressBar() {
   update();
 }
 
-/* --------------------------------------------------------------------------
-   Boot
-   -------------------------------------------------------------------------- */
 function init() {
   collectElements();
 
@@ -736,8 +702,6 @@ function init() {
   setupProgressBar();
   setupRevealObserver();
 
-  // The gate is a modal prompt, so lock the page behind it and put keyboard
-  // focus on the one thing there is to do.
   setMainInert(true);
   els.openBtn.focus({ preventScroll: true });
 
@@ -748,8 +712,6 @@ function init() {
   }
 }
 
-// If setup throws, the page must never end up blank: hide the gate, unlock the
-// content and reveal everything.
 function failOpen() {
   const gate = document.getElementById("gate");
   if (gate) gate.hidden = true;

@@ -1,11 +1,3 @@
-/* ==========================================================================
-   Birthday site
-   Order: tokens -> base -> utilities -> sections -> keyframes -> media
-   ========================================================================== */
-
-/* --------------------------------------------------------------------------
-   Tokens
-   -------------------------------------------------------------------------- */
 :root {
   --bg-0: #12052a;
   --bg-1: #2a0a4e;
@@ -46,9 +38,6 @@
   --max: 1080px;
 }
 
-/* --------------------------------------------------------------------------
-   Base
-   -------------------------------------------------------------------------- */
 *,
 *::before,
 *::after {
@@ -82,7 +71,6 @@ img {
   display: none !important;
 }
 
-/* Fixed background scene: gradient wash + drifting aurora blobs */
 .aurora {
   position: fixed;
   inset: 0;
@@ -143,7 +131,6 @@ img {
   animation: drift-c 30s ease-in-out infinite;
 }
 
-/* Film grain so the flat purple reads as a lit scene */
 .grain {
   position: fixed;
   inset: 0;
@@ -159,9 +146,6 @@ img {
   z-index: 1;
 }
 
-/* --------------------------------------------------------------------------
-   Utilities
-   -------------------------------------------------------------------------- */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -238,8 +222,6 @@ img {
   transform: none;
 }
 
-/* Gradient-clipped display type, with a solid-colour fallback for browsers
-   that cannot clip a background to text. */
 .display {
   color: var(--cream);
   font-family: var(--font-display);
@@ -269,9 +251,6 @@ img {
   }
 }
 
-/* --------------------------------------------------------------------------
-   Buttons
-   -------------------------------------------------------------------------- */
 .btn {
   position: relative;
   display: inline-flex;
@@ -345,9 +324,6 @@ img {
   box-shadow: var(--shadow-1);
 }
 
-/* --------------------------------------------------------------------------
-   Overlays: progress, confetti, sparkles
-   -------------------------------------------------------------------------- */
 .progress {
   position: fixed;
   top: 0;
@@ -411,9 +387,6 @@ img {
   animation: sparkle-out 0.75s ease-out forwards;
 }
 
-/* --------------------------------------------------------------------------
-   Gate — the visible, clickable first screen
-   -------------------------------------------------------------------------- */
 .gate {
   position: fixed;
   inset: 0;
@@ -465,9 +438,6 @@ img {
   animation: pulse 2.6s ease-in-out infinite;
 }
 
-/* --------------------------------------------------------------------------
-   Hero
-   -------------------------------------------------------------------------- */
 .hero {
   display: grid;
   gap: clamp(2rem, 6vw, 3.5rem);
@@ -506,7 +476,6 @@ img {
   margin-top: 1.8rem;
 }
 
-/* Gradient ring frame around the hero photo */
 .photo-frame {
   position: relative;
   width: clamp(210px, 62vw, 330px);
@@ -604,9 +573,6 @@ img {
   background: rgba(255, 255, 255, 0.13);
 }
 
-/* --------------------------------------------------------------------------
-   Numbers
-   -------------------------------------------------------------------------- */
 .numbers {
   text-align: center;
 }
@@ -678,9 +644,6 @@ img {
   color: var(--sun);
 }
 
-/* --------------------------------------------------------------------------
-   Gallery
-   -------------------------------------------------------------------------- */
 .gallery__grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
@@ -771,9 +734,6 @@ img {
   color: var(--muted);
 }
 
-/* --------------------------------------------------------------------------
-   Letter
-   -------------------------------------------------------------------------- */
 .letter__paper {
   position: relative;
   margin-top: clamp(1.6rem, 4vw, 2.4rem);
@@ -835,9 +795,6 @@ img {
   margin-top: 1.6rem;
 }
 
-/* --------------------------------------------------------------------------
-   Cake
-   -------------------------------------------------------------------------- */
 .cake-section {
   text-align: center;
 }
@@ -978,9 +935,6 @@ img {
   color: var(--sun);
 }
 
-/* --------------------------------------------------------------------------
-   Footer + lightbox
-   -------------------------------------------------------------------------- */
 .footer {
   padding: clamp(2.5rem, 8vh, 4rem) var(--gutter) clamp(2rem, 6vh, 3rem);
   text-align: center;
@@ -1066,9 +1020,6 @@ img {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* --------------------------------------------------------------------------
-   Keyframes
-   -------------------------------------------------------------------------- */
 @keyframes drift-a {
   0%,
   100% {
@@ -1194,9 +1145,6 @@ img {
   }
 }
 
-/* --------------------------------------------------------------------------
-   Responsive
-   -------------------------------------------------------------------------- */
 @media (min-width: 880px) {
   .hero {
     grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
@@ -1249,7 +1197,6 @@ img {
   }
 }
 
-/* Touch devices never hover, so captions stay readable. */
 @media (hover: none) {
   .gallery__caption {
     opacity: 1;
@@ -1257,9 +1204,6 @@ img {
   }
 }
 
-/* --------------------------------------------------------------------------
-   Reduced motion
-   -------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
