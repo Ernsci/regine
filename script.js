@@ -113,6 +113,7 @@ function collectElements() {
   els.lightboxClose = document.getElementById("lightboxClose");
   els.lightboxPrev = document.getElementById("lightboxPrev");
   els.lightboxNext = document.getElementById("lightboxNext");
+  els.petalsLayer = document.getElementById("petalsLayer");
 }
 
 function parseBirthday(value) {
@@ -390,13 +391,13 @@ function typeLetter() {
 }
 
 const CONFETTI_COLORS = [
-  "#ff69b4",
-  "#ff6b6b",
-  "#4ecdc4",
-  "#ffe66d",
-  "#ffe8f1",
-  "#ff8c42",
-  "#c084fc",
+  "#ff9ec7",
+  "#ffc2dd",
+  "#ffd9ea",
+  "#ffffff",
+  "#f45b9d",
+  "#ffb0d0",
+  "#fff5f9",
 ];
 
 const CONFETTI_SHAPES = [
@@ -461,6 +462,61 @@ function sparkleFromElement(element) {
   spawnSparkles(rect.left + rect.width / 2, rect.top + rect.height / 2);
 }
 
+const PETAL_COLORS = [
+  { color: "#ffc2dd", deep: "#f45b9d" },
+  { color: "#ffd9ea", deep: "#ff7fb5" },
+  { color: "#fff5f9", deep: "#ffb0d0" },
+  { color: "#ffffff", deep: "#ffc2dd" },
+  { color: "#ff9ec7", deep: "#e8468a" },
+];
+const MAX_PETAL_NODES = 32;
+
+let petalTimer = 0;
+
+function spawnPetal() {
+  const palette = pick(PETAL_COLORS);
+  const petal = document.createElement("span");
+  petal.className = "petal";
+  petal.style.setProperty("--x", `${randomBetween(-4, 100).toFixed(2)}%`);
+  petal.style.setProperty("--size", `${randomBetween(9, 20).toFixed(1)}px`);
+  petal.style.setProperty("--dur", `${randomBetween(9, 17).toFixed(2)}s`);
+  petal.style.setProperty(
+    "--delay",
+    `${(Math.random() < 0.3 ? randomBetween(0, 7) : 0).toFixed(2)}s`
+  );
+  petal.style.setProperty(
+    "--sway",
+    `${randomBetween(-14, 14).toFixed(1)}vw`
+  );
+  petal.style.setProperty("--peak", randomBetween(0.55, 0.95).toFixed(2));
+  petal.style.setProperty("--petal-color", palette.color);
+  petal.style.setProperty("--petal-deep", palette.deep);
+  removeWhenDone(petal);
+  els.petalsLayer.appendChild(petal);
+}
+
+function startPetalRain() {
+  if (prefersReducedMotion()) return;
+
+  if (!els.petalsLayer) {
+    console.warn(
+      "[birthday] #petalsLayer is missing from index.html — petal rain is skipped."
+    );
+    return;
+  }
+
+  for (let i = 0; i < 6; i += 1) spawnPetal();
+
+  const loop = () => {
+    if (els.petalsLayer.childElementCount < MAX_PETAL_NODES) {
+      spawnPetal();
+    }
+    petalTimer = window.setTimeout(loop, randomBetween(500, 1100));
+  };
+
+  loop();
+}
+
 let candlesBlown = false;
 let blowBusy = false;
 let blowTimers = [];
@@ -473,10 +529,15 @@ function renderCandles(age) {
     const candle = document.createElement("span");
     candle.className = "candle";
 
+    const wick = document.createElement("span");
+    wick.className = "candle__wick";
+
     const flame = document.createElement("span");
     flame.className = "candle__flame";
+    flame.style.animationDuration = `${randomBetween(0.85, 1.35).toFixed(2)}s`;
+    flame.style.animationDelay = `-${randomBetween(0, 1.35).toFixed(2)}s`;
 
-    candle.appendChild(flame);
+    candle.append(wick, flame);
     els.cakeCandles.appendChild(candle);
   }
 }
@@ -754,6 +815,7 @@ function init() {
   setupLightbox();
   setupProgressBar();
   setupRevealObserver();
+  startPetalRain();
 
   setMainInert(true);
   els.openBtn.focus({ preventScroll: true });
