@@ -581,6 +581,8 @@ function openGate() {
   window.setTimeout(
     () => {
       els.gate.hidden = true;
+      const opener = document.getElementById("opener");
+      if (opener) opener.hidden = false;
       els.enterBtn.hidden = false;
     },
     prefersReducedMotion() ? 0 : 900
@@ -596,6 +598,29 @@ function hideSection(element, label) {
     return;
   }
   section.hidden = true;
+}
+
+function revealAndScroll(section) {
+  if (!section) {
+    console.warn("[birthday] Continue button target section not found.");
+    return;
+  }
+
+  section.hidden = false;
+
+  const offset = prefersReducedMotion() ? 0 : 260;
+  window.setTimeout(() => {
+    section.scrollIntoView({
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+      block: "start",
+    });
+  }, offset);
+}
+
+function hideAllSections() {
+  document
+    .querySelectorAll(".main .section")
+    .forEach((section) => (section.hidden = true));
 }
 
 function celebrationAge(currentAge) {
@@ -694,6 +719,7 @@ function init() {
   applyContent(celebrating);
   renderGallery();
   renderCandles(celebrating);
+  hideAllSections();
 
   if (birth) {
     renderStats(buildStats(birth, now));
@@ -705,7 +731,15 @@ function init() {
   els.enterBtn.addEventListener("click", () => {
     sparkleFromElement(els.enterBtn);
     celebrate();
-    document.getElementById("numbers").scrollIntoView({ behavior: "smooth" });
+    revealAndScroll(document.querySelector("#numbers"));
+  });
+
+  document.querySelectorAll("[data-next]").forEach((button) => {
+    button.addEventListener("click", () => {
+      sparkleFromElement(button);
+      const target = document.querySelector(button.dataset.next);
+      if (target) revealAndScroll(target);
+    });
   });
   els.blowBtn.addEventListener("click", toggleCandles);
   els.letterReplay.addEventListener("click", typeLetter);
@@ -759,6 +793,13 @@ function failOpen() {
     const section = stats.closest(".section");
     if (section) section.hidden = true;
   }
+
+  document
+    .querySelectorAll(".main .section")
+    .forEach((section) => (section.hidden = false));
+
+  const opener = document.getElementById("opener");
+  if (opener) opener.hidden = false;
 
   document
     .querySelectorAll(".reveal")

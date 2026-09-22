@@ -42,7 +42,7 @@
   </div>
 
   <main class="main" id="main">
-    <section class="section opener" id="opener" aria-labelledby="openerTitle">
+    <section class="section opener" id="opener" aria-labelledby="openerTitle" hidden>
       <div class="opener__inner">
         <p class="opener__kicker reveal" id="openerKicker">For you, today</p>
         <h1 class="display opener__title reveal" id="openerTitle">
@@ -70,6 +70,7 @@
       </h2>
       <p class="section__lead reveal" id="numbersLead"></p>
       <div class="stats" id="stats"></div>
+      <button class="btn btn--hero reveal" data-next="#gallery" type="button">Continue →</button>
     </section>
 
     <section class="section gallery-section" id="gallery" aria-labelledby="galleryTitle">
@@ -87,6 +88,7 @@
         <p class="sr-only" id="letterFull"></p>
         <p class="letter__signoff" id="letterSignoff" aria-hidden="true"></p>
         <button class="btn btn--ghost" id="letterReplay" type="button">Read it again ✍️</button>
+        <button class="btn btn--hero reveal" data-next="#cake" type="button">Continue →</button>
       </div>
     </section>
 
@@ -103,6 +105,7 @@
       </div>
       <button class="btn btn--hero reveal" id="blowBtn" type="button">Blow out the candles 🎂</button>
       <p class="wish" id="wishMessage" role="status" aria-live="polite"></p>
+      <button class="btn btn--hero reveal" data-next="#gallery" type="button">See our moments 📸</button>
     </section>
 
     <footer class="footer">
