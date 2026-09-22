@@ -476,6 +476,7 @@ const PETAL_COLORS = [
   { color: "#ff9ec7", deep: "#e8468a" },
 ];
 const MAX_PETAL_NODES = 32;
+const MAX_PETAL_NODES_CALM = 10;
 
 let petalTimer = 0;
 
@@ -548,6 +549,7 @@ function dodgePetal(petal, clientX, clientY) {
 
 function petalBurstAt(clientX, clientY) {
   if (prefersReducedMotion()) return;
+  if (!birthdayToday) return;
   if (!els.petalsLayer) return;
   if (els.gate && !els.gate.hidden) return;
   if (els.lightbox && els.lightbox.open) return;
@@ -607,13 +609,18 @@ function startPetalRain() {
     return;
   }
 
-  for (let i = 0; i < 6; i += 1) spawnPetal();
+  const cap = () => (birthdayToday ? MAX_PETAL_NODES : MAX_PETAL_NODES_CALM);
+
+  for (let i = 0; i < 3; i += 1) spawnPetal();
 
   const loop = () => {
-    if (els.petalsLayer.childElementCount < MAX_PETAL_NODES) {
+    if (els.petalsLayer.childElementCount < cap()) {
       spawnPetal();
     }
-    petalTimer = window.setTimeout(loop, randomBetween(500, 1100));
+    petalTimer = window.setTimeout(
+      loop,
+      birthdayToday ? randomBetween(500, 1100) : randomBetween(1600, 3200)
+    );
   };
 
   loop();
@@ -734,6 +741,12 @@ function celebrate() {
 }
 
 function openGate() {
+  if (!birthdayToday) {
+    console.warn(
+      "[birthday] Gate open blocked — today is not the celebration day."
+    );
+    return;
+  }
   if (els.gate.classList.contains("is-closing")) return;
 
   sparkleFromElement(els.openBtn);
@@ -814,10 +827,17 @@ function applyDayContext(birth, now) {
   }
 
   const days = daysUntilNextBirthday(birth, now);
-  if (days > 0 && els.gateCountdown) {
-    els.gateCountdown.textContent = `${days} day${
-      days === 1 ? "" : "s"
-    } to go… 🌸`;
+  if (els.openBtn) els.openBtn.hidden = true;
+  if (els.gateKicker) {
+    els.gateKicker.textContent = "Not yet… 🌸";
+  }
+  if (els.gateCountdown) {
+    els.gateCountdown.textContent =
+      days > 0
+        ? `Come back on September 25 — ${days} day${
+            days === 1 ? "" : "s"
+          } to go.`
+        : "Come back on September 25.";
   }
 }
 
@@ -965,10 +985,13 @@ function init() {
   setupReactivePetals();
 
   setMainInert(true);
-  els.openBtn.focus({ preventScroll: true });
+  if (birthdayToday) {
+    els.openBtn.focus({ preventScroll: true });
+  }
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Enter") return;
+    if (!birthdayToday) return;
     if (!els.gate || els.gate.hidden) return;
     if (document.activeElement === els.openBtn) return;
     event.preventDefault();
