@@ -1,4 +1,8 @@
+const HER_NAME = "Regine";
+
 const CONFIG = {
+
+  name: HER_NAME,
 
   birthday: "2008-09-25",
 
@@ -20,14 +24,14 @@ const CONFIG = {
   photos: [{ src: "ourpic.jpg", caption: "Us — my favourite place to be" }],
 
   letter: [
-    "Happy 18th birthday.",
+    `Happy 18th birthday, ${HER_NAME}.`,
     "Eighteen. A whole adult, legally speaking, which honestly reads like a clerical error.",
     "Here is what I actually want you to know: you are the best part of my ordinary days. Not the loud, memorable ones — the boring Tuesday ones, where nothing happens and everything is fine because you are in them.",
     "I made you a page instead of buying a card, mostly because a card cannot throw confetti at you. Keep scrolling. There is cake.",
     "New country, new decade, new you. I cannot wait to watch all of it.",
   ].join("\n\n"),
 
-  signoff: "— happy 18th, my love 💖",
+  signoff: `— happy 18th, ${HER_NAME} 💖`,
 
   wish: "Wish made. Now go be 18. 🎉",
 
@@ -114,6 +118,8 @@ function collectElements() {
   els.lightboxPrev = document.getElementById("lightboxPrev");
   els.lightboxNext = document.getElementById("lightboxNext");
   els.petalsLayer = document.getElementById("petalsLayer");
+  els.gateKicker = document.getElementById("gateKicker");
+  els.gateCountdown = document.getElementById("gateCountdown");
 }
 
 function parseBirthday(value) {
@@ -473,26 +479,122 @@ const MAX_PETAL_NODES = 32;
 
 let petalTimer = 0;
 
-function spawnPetal() {
+function spawnPetal(options = {}) {
   const palette = pick(PETAL_COLORS);
   const petal = document.createElement("span");
   petal.className = "petal";
-  petal.style.setProperty("--x", `${randomBetween(-4, 100).toFixed(2)}%`);
+
+  if (typeof options.x === "number") {
+    petal.style.setProperty("--x", `${options.x.toFixed(2)}%`);
+  } else {
+    petal.style.setProperty("--x", `${randomBetween(-4, 100).toFixed(2)}%`);
+  }
+
   petal.style.setProperty("--size", `${randomBetween(9, 20).toFixed(1)}px`);
-  petal.style.setProperty("--dur", `${randomBetween(9, 17).toFixed(2)}s`);
+  petal.style.setProperty(
+    "--dur",
+    `${(options.short ? randomBetween(5, 7) : randomBetween(9, 17)).toFixed(2)}s`
+  );
   petal.style.setProperty(
     "--delay",
     `${(Math.random() < 0.3 ? randomBetween(0, 7) : 0).toFixed(2)}s`
   );
+  petal.style.setProperty("--sway", `${randomBetween(-14, 14).toFixed(1)}vw`);
   petal.style.setProperty(
-    "--sway",
-    `${randomBetween(-14, 14).toFixed(1)}vw`
+    "--peak",
+    (options.short ? randomBetween(0.85, 1) : randomBetween(0.55, 0.95)).toFixed(
+      2
+    )
   );
-  petal.style.setProperty("--peak", randomBetween(0.55, 0.95).toFixed(2));
   petal.style.setProperty("--petal-color", palette.color);
   petal.style.setProperty("--petal-deep", palette.deep);
   removeWhenDone(petal);
   els.petalsLayer.appendChild(petal);
+}
+
+const petalDodges = new WeakMap();
+let petalPointerFrame = 0;
+let petalPointerPos = null;
+
+function dodgePetal(petal, clientX, clientY) {
+  const rect = petal.getBoundingClientRect();
+  const dx = rect.left + rect.width / 2 - clientX;
+  const dy = rect.top + rect.height / 2 - clientY;
+  const distance = Math.hypot(dx, dy);
+
+  if (distance > 90 || distance === 0) return;
+
+  petal.classList.add("is-dodging");
+  petal.style.setProperty(
+    "--dodge-x",
+    `${((dx / distance) * 52).toFixed(1)}px`
+  );
+  petal.style.setProperty(
+    "--dodge-y",
+    `${((dy / distance) * 40 - 12).toFixed(1)}px`
+  );
+
+  if (petalDodges.has(petal)) clearTimeout(petalDodges.get(petal));
+  petalDodges.set(
+    petal,
+    window.setTimeout(() => {
+      petal.classList.remove("is-dodging");
+      petal.style.removeProperty("--dodge-x");
+      petal.style.removeProperty("--dodge-y");
+      petalDodges.delete(petal);
+    }, 420)
+  );
+}
+
+function petalBurstAt(clientX, clientY) {
+  if (prefersReducedMotion()) return;
+  if (!els.petalsLayer) return;
+  if (els.gate && !els.gate.hidden) return;
+  if (els.lightbox && els.lightbox.open) return;
+
+  for (let i = 0; i < 5; i += 1) {
+    const angle = (Math.PI * 2 * i) / 5 + Math.random() * 0.8;
+    const distanceVW = randomBetween(2.5, 7) * Math.cos(angle);
+    const petal = spawnPetal({
+      x: (clientX / window.innerWidth) * 100 + distanceVW,
+      short: true,
+    });
+    petal.style.top = `${clientY}px`;
+  }
+}
+
+function setupReactivePetals() {
+  if (prefersReducedMotion() || !els.petalsLayer) return;
+
+  document.addEventListener(
+    "pointermove",
+    (event) => {
+      petalPointerPos = { x: event.clientX, y: event.clientY };
+      if (petalPointerFrame) return;
+      petalPointerFrame = requestAnimationFrame(() => {
+        petalPointerFrame = 0;
+        if (!petalPointerPos) return;
+        if (els.gate && !els.gate.hidden) return;
+        if (els.lightbox && els.lightbox.open) return;
+
+        els.petalsLayer
+          .querySelectorAll(".petal:not(.is-dodging)")
+          .forEach((petal) =>
+            dodgePetal(petal, petalPointerPos.x, petalPointerPos.y)
+          );
+      });
+    },
+    { passive: true }
+  );
+
+  window.addEventListener(
+    "pointerdown",
+    (event) => {
+      if (event.target.closest("button, a, input, dialog")) return;
+      petalBurstAt(event.clientX, event.clientY);
+    },
+    { passive: true }
+  );
 }
 
 function startPetalRain() {
@@ -645,11 +747,19 @@ function openGate() {
       const opener = document.getElementById("opener");
       if (opener) opener.hidden = false;
       els.enterBtn.hidden = false;
+      els.enterBtn.focus({ preventScroll: true });
     },
     prefersReducedMotion() ? 0 : 900
   );
 
   celebrate();
+
+  if (birthdayToday) {
+    window.setTimeout(
+      () => spawnConfetti(160),
+      prefersReducedMotion() ? 0 : 600
+    );
+  }
 }
 
 function hideSection(element, label) {
@@ -675,6 +785,12 @@ function revealAndScroll(section) {
       behavior: prefersReducedMotion() ? "auto" : "smooth",
       block: "start",
     });
+    const focusTarget = section.querySelector(
+      "[data-focus], button[data-next]:not([hidden]), button:not([hidden])"
+    );
+    if (focusTarget && !prefersReducedMotion()) {
+      focusTarget.focus({ preventScroll: true });
+    }
   }, offset);
 }
 
@@ -682,6 +798,27 @@ function hideAllSections() {
   document
     .querySelectorAll(".main .section")
     .forEach((section) => (section.hidden = true));
+}
+
+let birthdayToday = false;
+
+function applyDayContext(birth, now) {
+  if (!birth) return;
+
+  birthdayToday = isBirthdayToday(birth, now);
+
+  if (birthdayToday) {
+    if (els.gateKicker) els.gateKicker.textContent = "Today's the day 🎉";
+    if (els.gateCountdown) els.gateCountdown.textContent = "";
+    return;
+  }
+
+  const days = daysUntilNextBirthday(birth, now);
+  if (days > 0 && els.gateCountdown) {
+    els.gateCountdown.textContent = `${days} day${
+      days === 1 ? "" : "s"
+    } to go… 🌸`;
+  }
 }
 
 function celebrationAge(currentAge) {
@@ -710,7 +847,15 @@ function applyContent(celebratingAge) {
     document.querySelectorAll("[data-age-ordinal]").forEach((node) => {
       node.textContent = ordinal(celebratingAge);
     });
-    document.title = `Happy ${ordinal(celebratingAge)} Birthday 🎂`;
+    document.title = CONFIG.name
+      ? `Happy ${ordinal(celebratingAge)} Birthday, ${CONFIG.name} 🎂`
+      : `Happy ${ordinal(celebratingAge)} Birthday 🎂`;
+  }
+
+  if (CONFIG.name) {
+    document.querySelectorAll("[data-name]").forEach((node) => {
+      node.textContent = CONFIG.name;
+    });
   }
 
   els.openerKicker.textContent = CONFIG.openerKicker;
@@ -778,6 +923,7 @@ function init() {
   const celebrating = celebrationAge(age);
 
   applyContent(celebrating);
+  applyDayContext(birth, now);
   renderGallery();
   renderCandles(celebrating);
   hideAllSections();
@@ -816,9 +962,18 @@ function init() {
   setupProgressBar();
   setupRevealObserver();
   startPetalRain();
+  setupReactivePetals();
 
   setMainInert(true);
   els.openBtn.focus({ preventScroll: true });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Enter") return;
+    if (!els.gate || els.gate.hidden) return;
+    if (document.activeElement === els.openBtn) return;
+    event.preventDefault();
+    openGate();
+  });
 
   try {
     history.scrollRestoration = "manual";
@@ -840,6 +995,12 @@ function failOpen() {
   const openerMessage = document.getElementById("openerMessage");
   if (openerMessage && !openerMessage.textContent) {
     openerMessage.textContent = CONFIG.openerMessage;
+  }
+
+  if (CONFIG.name) {
+    document.querySelectorAll("[data-name]").forEach((node) => {
+      node.textContent = CONFIG.name;
+    });
   }
 
   const numbersLead = document.getElementById("numbersLead");

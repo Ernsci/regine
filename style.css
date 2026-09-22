@@ -410,8 +410,13 @@ img {
   border-radius: 88% 12% 88% 12% / 88% 12% 88% 12%;
   opacity: 0;
   filter: drop-shadow(0 3px 7px rgba(244, 91, 157, 0.22));
-  will-change: transform, opacity;
+  will-change: transform, opacity, translate;
+  transition: translate 0.45s var(--ease-out);
   animation: petal-fall var(--dur, 12s) linear var(--delay, 0s) forwards;
+}
+
+.petal.is-dodging {
+  translate: var(--dodge-x, 0px) var(--dodge-y, 0px);
 }
 
 .gate {
@@ -459,6 +464,22 @@ img {
 .gate__hint {
   font-size: 0.88rem;
   color: var(--muted);
+}
+
+.gate__countdown {
+  min-height: 1.6em;
+  padding: 0.35rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.55);
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--pink);
+}
+
+.gate__countdown:empty {
+  display: none;
 }
 
 .gate .btn--hero {

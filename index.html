@@ -36,7 +36,8 @@
   <div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gateTitle">
     <div class="gate__inner">
       <p class="kicker" id="gateKicker">Something is waiting for you</p>
-      <p class="gate__title" id="gateTitle">Happy <span data-age-ordinal>18th</span><br />Birthday</p>
+      <p class="gate__title" id="gateTitle">Happy <span data-age-ordinal>18th</span><br />Birthday,<br /><span data-name>Regine</span></p>
+      <p class="gate__countdown" id="gateCountdown" aria-live="polite"></p>
       <button class="btn btn--hero" id="openBtn" type="button">Open your surprise 🎁</button>
       <p class="gate__hint">No peeking. Okay, peek a little. 👀</p>
     </div>
@@ -47,7 +48,10 @@
       <div class="opener__inner">
         <p class="opener__kicker reveal" id="openerKicker">For you, today</p>
         <h1 class="display opener__title reveal" id="openerTitle">
-          Happy <span data-age-ordinal>18th</span> Birthday
+          Happy <span data-age-ordinal>18th</span> Birthday,<br /><span
+            data-name
+            >Regine</span
+          >
         </h1>
         <p class="opener__message reveal" id="openerMessage"></p>
         <div class="opener__media">
@@ -105,7 +109,7 @@
         </div>
         <div class="cake__plate"></div>
       </div>
-      <button class="btn btn--hero reveal" id="blowBtn" type="button">Blow out the candles 🎂</button>
+      <button class="btn btn--hero reveal" id="blowBtn" data-focus type="button">Blow out the candles 🎂</button>
       <p class="wish" id="wishMessage" role="status" aria-live="polite"></p>
       <button class="btn btn--hero reveal" data-next="#gallery" type="button">See our moments 📸</button>
     </section>
