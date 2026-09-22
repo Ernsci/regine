@@ -4,10 +4,10 @@ const CONFIG = {
 
   celebratingAge: 18,
 
-  heroKicker: "The 18th of it all",
-  heroMessage: "Making memories with you is the best gift.",
+  openerKicker: "For you, today",
+  openerMessage: "Making memories with you is the best gift.",
 
-  celebrateLines: [
+  openerLines: [
     "Eighteen years of you. Ridiculous, in the best way.",
     "Officially an adult. Nobody tell the authorities.",
     "Nineteen is going to have to work hard to beat this.",
@@ -91,9 +91,9 @@ function collectElements() {
 
   els.heroPhoto = required("heroPhoto");
   els.photoFrame = required("photoFrame");
-  els.heroKicker = required("heroKicker");
-  els.heroSub = required("heroSub");
-  els.celebrateBtn = required("celebrateBtn");
+  els.openerKicker = required("openerKicker");
+  els.openerMessage = required("openerMessage");
+  els.enterBtn = required("enterBtn");
   els.numbersLead = required("numbersLead");
   els.stats = required("stats");
   els.galleryGrid = required("galleryGrid");
@@ -549,25 +549,25 @@ function setMainInert(isInert) {
 
 let celebrateTimer = 0;
 
-function cycleHeroMessage() {
+function cycleOpenerMessage() {
   const lines =
-    Array.isArray(CONFIG.celebrateLines) && CONFIG.celebrateLines.length
-      ? CONFIG.celebrateLines
-      : [CONFIG.heroMessage];
+    Array.isArray(CONFIG.openerLines) && CONFIG.openerLines.length
+      ? CONFIG.openerLines
+      : [CONFIG.openerMessage];
 
   clearTimeout(celebrateTimer);
-  els.heroSub.classList.add("is-celebrating");
-  els.heroSub.textContent = pick(lines);
+  els.openerMessage.classList.add("is-celebrating");
+  els.openerMessage.textContent = pick(lines);
 
   celebrateTimer = window.setTimeout(() => {
-    els.heroSub.classList.remove("is-celebrating");
-    els.heroSub.textContent = CONFIG.heroMessage;
+    els.openerMessage.classList.remove("is-celebrating");
+    els.openerMessage.textContent = CONFIG.openerMessage;
   }, 3800);
 }
 
 function celebrate() {
   spawnConfetti(window.innerWidth < 600 ? 70 : 120);
-  cycleHeroMessage();
+  cycleOpenerMessage();
 }
 
 function openGate() {
@@ -581,6 +581,7 @@ function openGate() {
   window.setTimeout(
     () => {
       els.gate.hidden = true;
+      els.enterBtn.hidden = false;
     },
     prefersReducedMotion() ? 0 : 900
   );
@@ -626,8 +627,8 @@ function applyContent(celebratingAge) {
     document.title = `Happy ${ordinal(celebratingAge)} Birthday 🎂`;
   }
 
-  els.heroKicker.textContent = CONFIG.heroKicker;
-  els.heroSub.textContent = CONFIG.heroMessage;
+  els.openerKicker.textContent = CONFIG.openerKicker;
+  els.openerMessage.textContent = CONFIG.openerMessage;
   els.numbersLead.textContent = CONFIG.numbersLead;
   els.letterFull.textContent = CONFIG.letter;
   els.letterSignoff.textContent = CONFIG.signoff;
@@ -701,9 +702,10 @@ function init() {
   }
 
   els.openBtn.addEventListener("click", openGate);
-  els.celebrateBtn.addEventListener("click", () => {
-    sparkleFromElement(els.celebrateBtn);
+  els.enterBtn.addEventListener("click", () => {
+    sparkleFromElement(els.enterBtn);
     celebrate();
+    document.getElementById("numbers").scrollIntoView({ behavior: "smooth" });
   });
   els.blowBtn.addEventListener("click", toggleCandles);
   els.letterReplay.addEventListener("click", typeLetter);
@@ -739,8 +741,10 @@ function failOpen() {
     if ("inert" in main) main.inert = false;
   }
 
-  const heroSub = document.getElementById("heroSub");
-  if (heroSub && !heroSub.textContent) heroSub.textContent = CONFIG.heroMessage;
+  const openerMessage = document.getElementById("openerMessage");
+  if (openerMessage && !openerMessage.textContent) {
+    openerMessage.textContent = CONFIG.openerMessage;
+  }
 
   const numbersLead = document.getElementById("numbersLead");
   if (numbersLead && !numbersLead.textContent) {

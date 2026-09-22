@@ -438,24 +438,31 @@ img {
   animation: pulse 2.6s ease-in-out infinite;
 }
 
-.hero {
+.opener {
   display: grid;
   gap: clamp(2rem, 6vw, 3.5rem);
   align-items: center;
+  justify-items: center;
   min-height: 100svh;
   padding-top: clamp(4.5rem, 14vh, 7rem);
   padding-bottom: clamp(5rem, 14vh, 7rem);
 }
 
-.hero__media {
-  justify-self: center;
-}
-
-.hero__text {
+.opener__inner {
+  display: grid;
+  justify-items: center;
   text-align: center;
 }
 
-.hero__sub {
+.opener__kicker {
+  margin-bottom: 1rem;
+}
+
+.opener__title {
+  margin: 0;
+}
+
+.opener__message {
   max-width: 40ch;
   margin: 1.1rem auto 0;
   font-size: clamp(1rem, 3vw, 1.18rem);
@@ -463,17 +470,34 @@ img {
   transition: color 0.4s ease;
 }
 
-.hero__sub.is-celebrating {
+.opener__message.is-celebrating {
   color: var(--pink);
   font-weight: 600;
 }
 
-.hero__actions {
+.opener__media {
+  margin-top: 2.2rem;
+}
+
+.opener__actions {
   display: flex;
   flex-wrap: wrap;
   gap: 0.8rem;
   justify-content: center;
   margin-top: 1.8rem;
+}
+
+.photo-frame--round {
+  width: clamp(230px, 66vw, 360px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  padding: 6px;
+}
+
+.photo-frame--round .photo-frame__img,
+.photo-frame--round .photo-frame__shine,
+.photo-frame--round .photo-frame__shine::after {
+  border-radius: 50%;
 }
 
 .photo-frame {
@@ -1146,25 +1170,8 @@ img {
 }
 
 @media (min-width: 880px) {
-  .hero {
-    grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
-    gap: clamp(2.5rem, 5vw, 4.5rem);
-  }
-
-  .hero__media {
-    justify-self: start;
-  }
-
-  .hero__text {
-    text-align: left;
-  }
-
-  .hero__sub {
-    margin-left: 0;
-  }
-
-  .hero__actions {
-    justify-content: flex-start;
+  .opener__inner {
+    gap: 0.5rem;
   }
 }
 
@@ -1190,7 +1197,7 @@ img {
     padding-left: 1.2rem;
   }
 
-  .hero__actions,
+  .opener__actions,
   .letter__paper .btn {
     display: flex;
     width: 100%;

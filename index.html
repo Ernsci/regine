@@ -21,7 +21,7 @@
   </noscript>
 </head>
 <body>
-  <a class="skip-link" href="#hero">Skip to the surprise</a>
+  <a class="skip-link" href="#opener">Skip to the surprise</a>
 
   <div class="aurora" aria-hidden="true">
     <span class="aurora__blob aurora__blob--one"></span>
@@ -42,26 +42,25 @@
   </div>
 
   <main class="main" id="main">
-    <section class="section hero" id="hero" aria-labelledby="heroTitle">
-      <div class="hero__media reveal" style="--i: 0">
-        <div class="photo-frame" id="photoFrame">
-          <img class="photo-frame__img" id="heroPhoto" src="ourpic.jpg" alt="A photo of us together" />
-          <span class="photo-frame__shine" aria-hidden="true"></span>
-        </div>
-      </div>
-      <div class="hero__text">
-        <p class="kicker reveal" style="--i: 1" id="heroKicker">The 18th of it all</p>
-        <h1 class="display reveal" style="--i: 2" id="heroTitle">
+    <section class="section opener" id="opener" aria-labelledby="openerTitle">
+      <div class="opener__inner">
+        <p class="opener__kicker reveal" id="openerKicker">For you, today</p>
+        <h1 class="display opener__title reveal" id="openerTitle">
           Happy <span data-age-ordinal>18th</span> Birthday
         </h1>
-        <p class="hero__sub reveal" style="--i: 3" id="heroSub"></p>
-        <div class="hero__actions reveal" style="--i: 4">
-          <button class="btn" id="celebrateBtn" type="button">Celebrate again 🎉</button>
+        <p class="opener__message reveal" id="openerMessage"></p>
+        <div class="opener__media">
+          <div class="photo-frame photo-frame--round" id="photoFrame">
+            <img class="photo-frame__img" id="heroPhoto" src="ourpic.jpg" alt="A photo of us together" />
+            <span class="photo-frame__shine" aria-hidden="true"></span>
+          </div>
+        </div>
+        <div class="opener__actions">
+          <button class="btn btn--hero reveal" id="enterBtn" type="button" hidden>
+            <span class="btn__label">Take me in →</span>
+          </button>
         </div>
       </div>
-      <a class="scroll-cue" href="#numbers" aria-label="Scroll down to your numbers">
-        <span aria-hidden="true">↓</span>
-      </a>
     </section>
 
     <section class="section numbers" id="numbers" aria-labelledby="numbersTitle">
@@ -73,14 +72,14 @@
       <div class="stats" id="stats"></div>
     </section>
 
-    <section class="section" id="gallery" aria-labelledby="galleryTitle">
+    <section class="section gallery-section" id="gallery" aria-labelledby="galleryTitle">
       <p class="kicker reveal">Moments</p>
       <h2 class="section__title reveal" id="galleryTitle">Us, in pictures</h2>
       <p class="section__lead reveal">Tap a photo to see it properly.</p>
       <div class="gallery__grid" id="galleryGrid"></div>
     </section>
 
-    <section class="section" id="letter" aria-labelledby="letterTitle">
+    <section class="section letter-section" id="letter" aria-labelledby="letterTitle">
       <p class="kicker reveal">On the record</p>
       <h2 class="section__title reveal" id="letterTitle">A little letter</h2>
       <div class="letter__paper reveal">
